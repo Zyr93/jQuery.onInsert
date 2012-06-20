@@ -1,0 +1,134 @@
+<?php
+/**
+ * Project: jQuery "OnInsert" Plugin
+ * Author: Derija
+ * Date: 18.06.12
+ * Time: 15:41
+ *
+ * Demonstration page of the plugin.
+ */
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>jQuery OnInsert Plugin Demo</title>
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="jquery.oninsert.js"></script>
+    <script>
+        (function($){
+            $('#test1').live('insert', function( jqEvt ) {
+                $('#msg').text('Test 1 is ' + ( jqEvt.isNew ? 'new' : 'old' ) + '.');
+            });
+            $('#test2').live('insert', function( jqEvt ) {
+                $('#msg').text('Test 2 is ' + ( jqEvt.isNew ? 'new' : 'old' ) + '.');
+            });
+            // Dummy for when we find a solution to this problem.
+            $('#test2').live('create', function( ) {
+                $('#msg').text('Test 2 has been created!');
+            });
+
+            var Test1, Test2;
+
+            $(function(){
+                Test1 = $('#test1');
+
+                $('#clicker').one('click', clickerHit1);
+            });
+
+            function clickerHit1( ) {
+                $('#clicker span').text('1');
+                $('#instructor').fadeOut(500, function( ) {
+                    $('#instructor').text('Hit it again to append the new element to the document!')
+                        .fadeIn(500);
+                });
+                Test2 = $('<div/>').attr('id', 'test2').text('Test 2');
+                $('#clicker').one('click', clickerHit2);
+            }
+
+            function clickerHit2( ) {
+                $('#clicker span').text('2');
+                $('#instructor').fadeOut(500, function( ) {
+                    $('#instructor').text('Hit it a last time to rearrange the "Test 1" Div!')
+                        .fadeIn(500);
+                });
+                Test2.hide().appendTo(document.body)
+                    .show(500, function( ) {
+                        $('#clicker').one('click', clickerHit3);
+                    });
+            }
+
+            function clickerHit3( ) {
+                $('#clicker span').text('3');
+                $('#instructor').fadeOut(500, function( ) {
+                    $('#instructor').text('Done!').fadeIn(500);
+                });
+                Test1.hide(500, function( ) {
+                    Test1.insertAfter(Test2).show(500);
+                });
+            }
+        })(window.jQuery);
+    </script>
+    <style>
+        code {
+            background: gainsboro;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            padding: 1px 0;
+        }
+    </style>
+</head>
+<body>
+    <article>
+        <h1>
+            jQuery &quot;onInsert&quot; Plugin
+        </h1>
+        <p>
+            Welcome! This is a little demonstration page for our &quot;onInsert&quot; plugin for jQuery
+            which we hope will prove useful for some developers!
+        </p>
+        <p>
+            The plugin launches an event called <code>onInsert</code> if any element has been inserted
+            into the document only. If the element has been in the document before, the event object
+            will hold a parameter called <code>isNew</code> that is set to <code>false</code>, otherwise it is set
+            to <code>true</code>.<br />
+            On request, I shall also introduce a property that distinguishes elements that have been
+            included into the document from those that have not, but, for example, have been inserted into
+            an element that is not in the document itself.
+        </p>
+        <p>
+            Yes, a lot of problems that appear to require such an event can be solved by using
+            <code>jQuery.fn.live</code> because most of these problems just need to listen for button
+            clicks or something. My problem though did not wait for an event on elements that may be
+            inserted into the document after an AJAX request. In fact, these elements would be created
+            dynamically, with or without AJAX and simply had to wrap these elements pretty much as soon
+            as they appear in the document. This is what I&apos;ve achieved here.
+        </p>
+
+        <h2>How it works</h2>
+        <p>
+            The plugin hooks the only two functions that can be used to insert elements into the list
+            of children of any existing node: <code>Node.prototype.appendChild</code> and
+            <code>Node.prototype.insertBefore</code>. Optionally, it is possible to distinguish totally
+            new elements from elements that have been in the document before. This may require quite some
+            time for large pages at the beginning of viewing the page since there was only the possibility
+            to loop through every element on the page and mark them as "inDocument"... Newly created
+            elements then of course do not have this mark. If you don't need it, use
+            <code>jQuery(document).data('insert._noDetectNew');</code> before the DOM has finished
+            loading.<br />
+            It is not possible to hook <code>document.createElement</code>, because, for example, it is
+            also possible to clone an element. I do not exactly know what jQuery does, but it certainly
+            does not use <code>document.createElement</code> for most actions.
+        </p>
+    </article>
+
+    <section>
+        <h2>Demonstration</h2>
+        <p id="instructor">
+            Hit the button to create a new element!
+        </p>
+        <button id="clicker">Hit it! <span>0</span></button>
+        <p id="msg">Messages...</p>
+        <div id="test1">Test 1</div>
+    </section>
+</body>
+</html>
